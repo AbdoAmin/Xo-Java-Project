@@ -26,7 +26,7 @@ public class ChatServer {
         try {
             ServerMessageImp obj = new ServerMessageImp();
             Registry reg = LocateRegistry.createRegistry(1099);
-            reg.rebind("ChatService", obj);
+            reg.rebind("GameService", obj);
         } catch (RemoteException e) {
             e.printStackTrace();
         }

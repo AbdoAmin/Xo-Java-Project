@@ -42,7 +42,7 @@ public class GameController {
 
     public void unRegister(){
         try {
-            myModle.stablishConnection().unRegister(myModle);
+            myModle.stablishConnection().unRegister(myModle,"Abdo");
         } catch (RemoteException ex) {
             Logger.getLogger(GameController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -57,9 +57,14 @@ public class GameController {
     
     
     public static void main(String args[]) {
-        GameController chat = new GameController();
-        chat.startGUI();
-        chat.myModle.stablishConnection();
+        GameController myGame = new GameController();
+        myGame.startGUI();
+        myGame.myModle.stablishConnection();
+        try {
+            myGame.myModle.stablishConnection().sendGameRequest("Abdo", "Sallam");
+        } catch (RemoteException ex) {
+            Logger.getLogger(GameController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
 }

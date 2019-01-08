@@ -7,13 +7,13 @@ package clientxo;
 
 import commontxo.ServerCallBack;
 import commontxo.ClientCallBack;
+import commontxo.GameRoom;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  *
@@ -24,7 +24,7 @@ public class GameModle extends UnicastRemoteObject implements ClientCallBack {
     private ServerCallBack server;
     
     ArrayList<String/*PlayerInfo*/> onlineList;
-    ArrayList<ClientCallBack> gameRoom;
+    GameRoom gameRoom;
     ArrayList</*ChatRoom(String UserName,String Chat,ArrayList<ClientCallBack>)*/String> chatRooms;//multibale chat rooms
     
  
@@ -44,8 +44,8 @@ public class GameModle extends UnicastRemoteObject implements ClientCallBack {
         if (server == null) {
             try {
                 Registry reg = LocateRegistry.getRegistry("127.0.0.1", 1099);
-                server = (ServerCallBack) reg.lookup("ChatService");
-                server.register(this);
+                server = (ServerCallBack) reg.lookup("GameService");
+                server.register(this,"Sallam");
             } catch (RemoteException e) {
                 e.printStackTrace();
             } catch (NotBoundException e) {
@@ -58,31 +58,31 @@ public class GameModle extends UnicastRemoteObject implements ClientCallBack {
     @Override
     public boolean sendGameNotifigation(String playerUserName) throws RemoteException {
      //Create Dialog
+     System.out.println("sendGameNotifigation");
      return true;
     }
 
     @Override
-    public void joinGameRoom(ArrayList<ClientCallBack> players) throws RemoteException {
-        
+    public void joinGameRoom(String roomName,ClientCallBack creatorClient) throws RemoteException {
+        gameRoom=new GameRoom(roomName,new ArrayList<ClientCallBack>(){{add(creatorClient);}});
+             System.out.println("joinGameRoom");
+            System.out.println(roomName);
     }
 
   
-
     @Override
-    public void joinChatRoom(ArrayList<ClientCallBack> players) throws RemoteException {
-        
+    public void joinChatRoom(String targetUserName, ClientCallBack targetClient) throws RemoteException {
     }
-
     
 
     @Override
-    public void leftGameRoom() throws RemoteException {
-        
+    public void leaveGameRoom() throws RemoteException {
+        gameRoom=null;
     }
 
     @Override
     public void leftChatRoom(String userNameWhoLeft) throws RemoteException {
-        
+        System.out.println("Test"); 
     }
 
     @Override
@@ -92,8 +92,14 @@ public class GameModle extends UnicastRemoteObject implements ClientCallBack {
 
 
     @Override
-    public void notifiyOnlineList(String msg) throws RemoteException {
+    public void notifiyOnlineList() throws RemoteException {
         
     }
 
+    @Override
+    public void addPlayerToGameRoom(ClientCallBack player) throws RemoteException {
+        gameRoom.addPlayer(player);
+    }
+
+    
 }

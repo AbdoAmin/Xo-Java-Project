@@ -6,11 +6,11 @@ import java.util.ArrayList;
 
 public interface ServerCallBack extends Remote {
     
-    public ArrayList<String> initOnlineList() throws RemoteException;
+    public ArrayList<PlayerList> initOnlineList() throws RemoteException;//if room!=null player:Busy
 
     boolean sendGameRequest(String myUserName,String oppesiteUserName) throws RemoteException;
         
-    boolean notifiyGameResult(String/*Player  winnerPlayer*/ p) throws RemoteException;
+    boolean notifiyGameResult(String roomName) throws RemoteException;
     
     void register(ClientCallBack clientRef,String playerUserName) throws RemoteException;
 

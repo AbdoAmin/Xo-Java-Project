@@ -3,10 +3,8 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/E:/ITI%20Courses/Java/labs/Project/ClientXo/src/clientxo/ServerCallBack.java</file>
-            <file>file:/E:/ITI%20Courses/Java/labs/Project/ClientXo/src/clientxo/ClientCallBack.java</file>
-            <file>file:/E:/ITI%20Courses/Java/labs/Project/ClientXo/src/clientxo/ChatController.java</file>
-            <file>file:/E:/ITI%20Courses/Java/labs/Project/ClientXo/src/clientxo/MyGui.java</file>
+            <file>file:/E:/ITI%20Courses/Java/labs/Project/Xo-Java-Project/ClientXo/src/clientxo/GameController.java</file>
+            <file>file:/E:/ITI%20Courses/Java/labs/Project/Xo-Java-Project/ClientXo/src/clientxo/GameModle.java</file>
         </group>
     </open-files>
 </project-private>

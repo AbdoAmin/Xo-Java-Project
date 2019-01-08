@@ -5,6 +5,7 @@
  */
 package commontxo;
 
+import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -13,15 +14,17 @@ import java.util.ArrayList;
  *
  * @author Abdo Amin
  */
-public interface ClientCallBack extends Remote {
+public interface ClientCallBack extends Remote{
     //control
     public boolean sendGameNotifigation(String playerUserName)throws RemoteException ;
     
-    public void joinGameRoom(ArrayList<ClientCallBack> players) throws RemoteException;
+    public void joinGameRoom(String roomName,ClientCallBack creatorClient) throws RemoteException;
     
-    public void leftGameRoom() throws RemoteException;
+    public void addPlayerToGameRoom(ClientCallBack player) throws RemoteException;
     
-    public void joinChatRoom(/*ChatRoom(name,allMessage,->this list)*/ArrayList<ClientCallBack> players) throws RemoteException;
+    public void leaveGameRoom() throws RemoteException;
+    
+    public void joinChatRoom(String targetUserName,ClientCallBack targetClient) throws RemoteException;
     
     public void leftChatRoom(String userNameWhoLeft) throws RemoteException;
     
@@ -29,8 +32,8 @@ public interface ClientCallBack extends Remote {
     public void play(String/*<-Player*/ player,int position) throws RemoteException;
     
     //control chat
-    public void receiveMessage(String nameOfRoom,String myMessage)throws RemoteException ;//filter yourseelf and send to yourself as friend room
+    public void receiveMessage(String senderUserName,String message)throws RemoteException ;//filter yourseelf and send to yourself as friend room
     
     //realTime Response // just a bouns feature
-    void notifiyOnlineList(String msg) throws RemoteException;
+    void notifiyOnlineList() throws RemoteException;
 }

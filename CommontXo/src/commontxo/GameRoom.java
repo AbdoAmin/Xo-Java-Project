@@ -5,13 +5,14 @@
  */
 package commontxo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  *
  * @author Abdo Amin
  */
-public class GameRoom {
+public class GameRoom implements Serializable{
 
     private String roomName;
     private ArrayList<ClientCallBack> players;
@@ -35,6 +36,10 @@ public class GameRoom {
 
     public void setPlayers(ArrayList<ClientCallBack> players) {
         this.players = players;
+    }
+    
+    public void addPlayer(ClientCallBack player) {
+        this.players.add(player);
     }
 
 }
