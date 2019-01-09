@@ -6,7 +6,7 @@
 package commontxo;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  *
@@ -15,9 +15,9 @@ import java.util.ArrayList;
 public class GameRoom implements Serializable{
 
     private String roomName;
-    private ArrayList<ClientCallBack> players;
+    private HashMap<String, ClientCallBack> players;
 
-    public GameRoom(String roomName, ArrayList<ClientCallBack> players) {
+    public GameRoom(String roomName, HashMap<String, ClientCallBack> players) {
         this.roomName = roomName;
         this.players = players;
     }
@@ -26,7 +26,7 @@ public class GameRoom implements Serializable{
         return roomName;
     }
 
-    public ArrayList<ClientCallBack> getPlayers() {
+    public HashMap<String, ClientCallBack> getPlayers() {
         return players;
     }
 
@@ -34,12 +34,15 @@ public class GameRoom implements Serializable{
         this.roomName = roomName;
     }
 
-    public void setPlayers(ArrayList<ClientCallBack> players) {
+    public void setPlayers(HashMap<String, ClientCallBack> players) {
         this.players = players;
     }
+
     
-    public void addPlayer(ClientCallBack player) {
-        this.players.add(player);
+    public void addPlayer(String playerUserName,ClientCallBack player) {
+        this.players.put(playerUserName,player);
     }
+    
+     
 
 }

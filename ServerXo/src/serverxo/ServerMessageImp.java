@@ -7,10 +7,17 @@ package serverxo;
 
 import commontxo.ClientCallBack;
 import commontxo.GameRoom;
+import commontxo.Player;
 import commontxo.PlayerList;
 import commontxo.ServerCallBack;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -22,11 +29,51 @@ import java.util.logging.Logger;
  */
 public class ServerMessageImp extends UnicastRemoteObject implements ServerCallBack {
 
+    static Connection connection = null;
+    static String dbName = "gamexo";
+    static String url = "jdbc:mysql://localhost:3306/" + dbName;
+    static String username = "root";
+    static String password = "root";
+    static ArrayList<Player> PlayersInformation;
+
     HashMap<String, ClientCallBack> clients = new HashMap<>();
 
     HashMap<String, String> clientMapGameRoom = new HashMap<>();
 
     HashMap<String, GameRoom> gameRooms = new HashMap<>();//for fast acces
+
+//     @Override
+//    public ArrayList<Player> getAllPlayers() throws RemoteException {
+//        return PlayersInformation;
+//    }
+    
+    public void IntializePlayersList() {
+        Player p;
+
+        try {
+            Statement stmt = connection.createStatement();
+            String query = new String("select * from user ");
+            ResultSet s = stmt.executeQuery(query);
+
+            while (s.next()) {
+                p = new Player();
+                p.setPlayerID(s.getInt("UserID"));
+                p.setPlayerUserName(s.getString("UserName"));
+                p.setPlayerEmail(s.getString("UserEmail"));
+                p.setPlayerPassword(s.getString("UserPassword"));
+                p.setPlayerName(s.getString("Name"));
+                p.setPlayerScore(s.getInt("UserScore"));
+                p.setPlayerState("offline");
+                stmt.close();
+                PlayersInformation.add(p);
+
+            }
+            connection.close();
+
+        } catch (SQLException e) {
+        }
+
+    }
 
     public void updateList() {
         clients.forEach((e, client) -> {
@@ -38,7 +85,11 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
         });
     }
 
-    public ServerMessageImp() throws RemoteException {
+    public ServerMessageImp() throws RemoteException, ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.jdbc.Driver");
+        connection = DriverManager.getConnection(url, username, password);
+        PlayersInformation = new ArrayList<>();
+        IntializePlayersList();
     }
 
     @Override
@@ -62,10 +113,10 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
     public boolean sendGameRequest(String myUserName, String oppesiteUserName) throws RemoteException {
         if (clients.containsKey(oppesiteUserName) && clients.containsKey(myUserName)) {
             if (clients.get(oppesiteUserName).sendGameNotifigation(myUserName)) {
-                ArrayList<ClientCallBack> temp = new ArrayList<ClientCallBack>() {
+                HashMap<String, ClientCallBack> temp = new HashMap<String, ClientCallBack>() {
                     {
-                        add(clients.get(myUserName));
-                        add(clients.get(oppesiteUserName));
+                        put(myUserName, clients.get(myUserName));
+                        put(oppesiteUserName, clients.get(oppesiteUserName));
                     }
                 };
                 GameRoom newGameRoom = new GameRoom(myUserName, temp);
@@ -75,11 +126,12 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
 
                 //Init GameRoom at Client Side
                 clients.get(myUserName).joinGameRoom(myUserName, clients.get(myUserName));
+
                 clients.get(oppesiteUserName).joinGameRoom(myUserName, clients.get(myUserName));
 
                 //pass CleintInterFace
-                clients.get(myUserName).addPlayerToGameRoom(clients.get(oppesiteUserName));
-                clients.get(oppesiteUserName).addPlayerToGameRoom(clients.get(oppesiteUserName));
+                clients.get(myUserName).addPlayerToGameRoom(oppesiteUserName, clients.get(oppesiteUserName));
+                clients.get(oppesiteUserName).addPlayerToGameRoom(oppesiteUserName, clients.get(oppesiteUserName));
                 return true;
             }
             System.out.println("sendGameRequest");
@@ -88,11 +140,11 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
     }
 
     @Override
-    public boolean notifiyGameResult(String roomName,String WinnerUserName) throws RemoteException {
+    public boolean notifiyGameResult(String roomName, String WinnerUserName) throws RemoteException {
         //TODO Ediiit Player score
-        
+
         if (gameRooms.containsKey(roomName)) {
-            gameRooms.get(roomName).getPlayers().forEach(client -> {
+            gameRooms.get(roomName).getPlayers().forEach((e, client) -> {
                 try {
                     client.leaveGameRoom();
                 } catch (RemoteException ex) {
@@ -114,42 +166,42 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
 
     @Override
     public void joinChatRoom(String myUserName, String playerUserName) throws RemoteException {
+        if (clients.containsKey(myUserName) && clients.containsKey(playerUserName)) {
+
+            clients.get(myUserName).joinChatRoom(playerUserName, clients.get(playerUserName));
+            clients.get(playerUserName).joinChatRoom(myUserName, clients.get(myUserName));
+
+        }
     }
 
     @Override
-    public void leftChatRoom(String myUserName, String playerUserName) throws RemoteException {
-    }
+    public void leftChatRoom(String myUserName, String userNameWhoLeft) throws RemoteException {
+        if (clients.containsKey(myUserName) && clients.containsKey(userNameWhoLeft)) {
 
-    @Override
-    public void signOut(String player) throws RemoteException {
-    }
+            clients.get(myUserName).leftChatRoom(userNameWhoLeft);
+            clients.get(userNameWhoLeft).leftChatRoom(myUserName);
 
-    @Override
-    public boolean signIn(String player) throws RemoteException {
-        return true;
-    }
-
-    @Override
-    public boolean signUp(String player) throws RemoteException {
-        return true;
+        }
     }
 
     @Override
     public void spectateGame(String myUserName, String roomName) throws RemoteException {
         if (gameRooms.containsKey(roomName)) {
-            clients.get(myUserName).joinGameRoom(roomName, gameRooms.get(roomName).getPlayers().get(0));
-            for (int i = 1; i < gameRooms.get(roomName).getPlayers().size(); i++) {
-                clients.get(myUserName).addPlayerToGameRoom(gameRooms.get(roomName).getPlayers().get(i));
-            }
-            gameRooms.get(roomName).addPlayer(clients.get(myUserName));
-            clientMapGameRoom.put(myUserName, roomName);
-            gameRooms.get(roomName).getPlayers().forEach(client -> {
-                try {
-                    client.addPlayerToGameRoom(clients.get(myUserName));
-                } catch (RemoteException ex) {
-                    System.err.println(ex.getMessage());
-                }
+            ArrayList<String> usersNames = (ArrayList<String>) gameRooms.get(roomName).getPlayers().keySet();
+            clients.get(myUserName).joinGameRoom(roomName, gameRooms.get(roomName).getPlayers().get(usersNames.get(0)));
 
+            for (int i = 1; i < gameRooms.get(roomName).getPlayers().size(); i++) {
+                clients.get(myUserName).addPlayerToGameRoom(usersNames.get(i),
+                        gameRooms.get(roomName).getPlayers().get(usersNames.get(i)));
+            }
+            gameRooms.get(roomName).addPlayer(myUserName, clients.get(myUserName));
+            clientMapGameRoom.put(myUserName, roomName);
+            gameRooms.get(roomName).getPlayers().forEach((e, client) -> {
+                try {
+                    client.addPlayerToGameRoom(myUserName, clients.get(myUserName));
+                } catch (RemoteException ex) {
+                    Logger.getLogger(ServerMessageImp.class.getName()).log(Level.SEVERE, null, ex);
+                }
             });
         }
     }
@@ -157,25 +209,83 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
     @Override
     public void leaveServer(String gameRoom, String myUserName) throws RemoteException {
         if (clients.containsKey(myUserName)) {
-            ArrayList<String> temp = gameRooms.get(gameRoom).getPlayers().keySet();
-            if (temp.indexOf(myUserName) > 1) {
-                gameRooms.get(gameRoom).getPlayers().remove(myUserName);
-                clients.forEach((e, client) -> {
-                    try {
-                        client.leftChatRoom(myUserName);
-                        client.leftGameRoom(myUserName);
-                    } catch (RemoteException ex) {
-                        Logger.getLogger(ServerMessageImp.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                });
-                updateList();
-            } else {
-                notifiyGameResult(gameRoom,gameRooms.get(gameRoom).getPlayers().get(temp.get(0)));
+            if (gameRooms.containsKey(gameRoom)) {
+                ArrayList<String> temp = new ArrayList<>(gameRooms.get(gameRoom).getPlayers().keySet());
+                if (temp.indexOf(myUserName) > 1) {
+                    gameRooms.get(gameRoom).getPlayers().remove(myUserName);
+
+                } else {
+                    temp.remove(myUserName);
+                    notifiyGameResult(gameRoom, temp.get(0));
+                }
             }
+            clients.forEach((e, client) -> {
+                try {
+                    client.leftChatRoom(myUserName);
+                } catch (RemoteException ex) {
+                    Logger.getLogger(ServerMessageImp.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            updateList();
             clients.remove(myUserName);
 
         }
     }
 
+    //// some Rawshana
+    @Override
+    public boolean signUp(String userName, String Name, String upassword, String Email) throws RemoteException {
+        try {
+            String query = new String("INSERT INTO `gamexo`.`user` "
+                    + "(`UserName`, `Name`, `UserEmail`, `UserPassword`) values (?, ?, ?, ?)");
+            PreparedStatement p = (PreparedStatement) connection.prepareStatement(query);
+            p.setString(1, userName);
+            p.setString(2, Name);
+            p.setString(3, Email);
+            p.setString(4, upassword);
+            if (p.execute()) {
+                Player player = new Player();
+                player.setPlayerUserName(userName);
+                player.setPlayerName(Name);
+                player.setPlayerPassword(upassword);
+                player.setPlayerEmail(Email);
+                player.setPlayerState("online");
+                PlayersInformation.add(player);
+            }
+
+            return true;
+
+        } catch (SQLException ex) {
+            return false;
+        }
+    }
+
+    @Override
+    public void signOut(Player userName) throws RemoteException {
+        for (Player p : PlayersInformation) {
+            if (p.getPlayerUserName().equals(userName)) {
+                p.setPlayerState("offline");
+                break;
+
+            }
+
+        }
+
+    }
+
+    @Override
+    public Player signIn(String userName, String PlayerPassword) throws RemoteException {
+
+        for (Player p : PlayersInformation) {
+            if (p.getPlayerUserName().equals(userName) && p.getPlayerPassword().equals(PlayerPassword)) {
+                p.setPlayerState("online");
+                return p;
+
+            }
+        }
+
+        return null;
+
+    }
 
 }

@@ -6,8 +6,9 @@ import java.util.ArrayList;
 
 public interface ServerCallBack extends Remote {
     
-    //init 
+    //init //
     public ArrayList<PlayerList> initOnlineList() throws RemoteException;//if room!=null player:Busy
+    
     
     void register(ClientCallBack clientRef,String playerUserName) throws RemoteException;
 
@@ -31,10 +32,9 @@ public interface ServerCallBack extends Remote {
     //control
     
     //Call RealTime change //any change
-    public void signOut(String/*Player*/ player) throws RemoteException; 
-    
-    public boolean signIn(String/*Player*/ player) throws RemoteException;
-    
-    public boolean signUp(String/*Player*/ player) throws RemoteException;
+ public void signOut(Player player) throws RemoteException;
+ 
+   public Player signIn(String userName,String password) throws RemoteException ;
+    public boolean signUp(String userName,String Name,String password,String Email) throws RemoteException;
     
 }
