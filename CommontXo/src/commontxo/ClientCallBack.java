@@ -5,17 +5,16 @@
  */
 package commontxo;
 
-import java.io.Serializable;
+
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 
 /**
  *
  * @author Abdo Amin
  */
 public interface ClientCallBack extends Remote{
-    //control
+    //game init
     public boolean sendGameNotifigation(String playerUserName)throws RemoteException ;
     
     public void joinGameRoom(String roomName,ClientCallBack creatorClient) throws RemoteException;
@@ -24,9 +23,12 @@ public interface ClientCallBack extends Remote{
     
     public void leaveGameRoom() throws RemoteException;
     
+    //chat
     public void joinChatRoom(String targetUserName,ClientCallBack targetClient) throws RemoteException;
     
     public void leftChatRoom(String userNameWhoLeft) throws RemoteException;
+    
+    public void leftGameRoom(String userNameWhoLeft) throws RemoteException;
     
     //control game
     public void play(String/*<-Player*/ player,int position) throws RemoteException;

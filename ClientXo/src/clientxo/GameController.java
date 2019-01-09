@@ -5,10 +5,8 @@
  */
 package clientxo;
 
-import java.rmi.NotBoundException;
+import commontxo.ClientCallBack;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,22 +38,31 @@ public class GameController {
         myGUI.displayMessage(myMessage);
     }
 
-    public void unRegister(){
+    public void unRegister() {
         try {
-            myModle.stablishConnection().unRegister(myModle,"Abdo");
+            myModle.stablishConnection().unRegister(myModle, "Abdo");
         } catch (RemoteException ex) {
             Logger.getLogger(GameController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    public void sendMessage(String sentMessage){
+
+    public void sendMessage(String sentMessage) throws RemoteException {
 //        try {
 //            myModle.stablishConnection().tellOthers(sentMessage);
 //        } catch (RemoteException ex) {
 //            Logger.getLogger(GameController.class.getName()).log(Level.SEVERE, null, ex);
 //        }
-    }
+
+//test and delete it
+        for (ClientCallBack clientRef : myModle.gameRoom.getPlayers()) {
+            clientRef.leftChatRoom("");
+        }
+
+        }
     
     
+    
+
     public static void main(String args[]) {
         GameController myGame = new GameController();
         myGame.startGUI();
@@ -66,5 +73,5 @@ public class GameController {
             Logger.getLogger(GameController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
 }

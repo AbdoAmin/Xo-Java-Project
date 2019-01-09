@@ -2,6 +2,9 @@ package clientxo;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.rmi.RemoteException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 
 public class MyGui extends JFrame implements KeyListener {
@@ -18,9 +21,13 @@ public class MyGui extends JFrame implements KeyListener {
         JButton okButton = new JButton("Send");
         txtField.addKeyListener(this);
 
-        okButton.addActionListener(new ActionListener() {
+        okButton.addActionListener(new ActionListener()  {
             public void actionPerformed(ActionEvent ae) {
-                myController.sendMessage(txtField.getText());
+                try {
+                    myController.sendMessage(txtField.getText());
+                } catch (RemoteException ex) {
+                    Logger.getLogger(MyGui.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 txtField.setText("");
             }
 
@@ -46,7 +53,11 @@ public class MyGui extends JFrame implements KeyListener {
         int code = e.getKeyCode();
 
         if (code == KeyEvent.VK_ENTER) {
-            myController.sendMessage(txtField.getText());
+            try {
+                myController.sendMessage(txtField.getText());
+            } catch (RemoteException ex) {
+                Logger.getLogger(MyGui.class.getName()).log(Level.SEVERE, null, ex);
+            }
             txtField.setText("");
         }
 
