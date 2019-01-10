@@ -40,7 +40,7 @@ public class GameController {
 
     public void unRegister() {
         try {
-            myModle.stablishConnection().unRegister(myModle, "Abdo");
+            myModle.getServerInstance().unRegister(myModle, "Abdo");
         } catch (RemoteException ex) {
             Logger.getLogger(GameController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -48,15 +48,11 @@ public class GameController {
 
     public void sendMessage(String sentMessage) throws RemoteException {
 //        try {
-//            myModle.stablishConnection().tellOthers(sentMessage);
+//            myModle.getServerInstance().tellOthers(sentMessage);
 //        } catch (RemoteException ex) {
 //            Logger.getLogger(GameController.class.getName()).log(Level.SEVERE, null, ex);
 //        }
 
-//test and delete it
-        for (ClientCallBack clientRef : myModle.gameRoom.getPlayers()) {
-            clientRef.leftChatRoom("");
-        }
 
         }
     
@@ -66,12 +62,23 @@ public class GameController {
     public static void main(String args[]) {
         GameController myGame = new GameController();
         myGame.startGUI();
-        myGame.myModle.stablishConnection();
+        myGame.myModle.getServerInstance();
         try {
-            myGame.myModle.stablishConnection().sendGameRequest("Abdo", "Sallam");
+            myGame.myModle.getServerInstance().sendGameRequest("Abdo", "Sallam");
         } catch (RemoteException ex) {
             Logger.getLogger(GameController.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    //current player surrender or leave spectate.
+    public void withdraw(String myUserName){
+        myModle.gameRoom.getPlayers().forEach((e,client)->{
+            try {
+                client.leftGameRoom(myUserName);
+            } catch (RemoteException ex) {
+                Logger.getLogger(GameController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
     }
 
 }

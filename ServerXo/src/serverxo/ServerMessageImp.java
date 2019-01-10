@@ -209,19 +209,20 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
     @Override
     public void leaveServer(String gameRoom, String myUserName) throws RemoteException {
         if (clients.containsKey(myUserName)) {
-            if (gameRooms.containsKey(gameRoom)) {
-                ArrayList<String> temp = new ArrayList<>(gameRooms.get(gameRoom).getPlayers().keySet());
-                if (temp.indexOf(myUserName) > 1) {
-                    gameRooms.get(gameRoom).getPlayers().remove(myUserName);
-
-                } else {
-                    temp.remove(myUserName);
-                    notifiyGameResult(gameRoom, temp.get(0));
-                }
-            }
+//            if (gameRooms.containsKey(gameRoom)) {
+//                ArrayList<String> temp = new ArrayList<>(gameRooms.get(gameRoom).getPlayers().keySet());
+//                if (temp.indexOf(myUserName) > 1) {
+//                    gameRooms.get(gameRoom).getPlayers().remove(myUserName);
+//
+//                } else {
+//                    temp.remove(myUserName);
+//                    notifiyGameResult(gameRoom, temp.get(0));
+//                }
+//            }
             clients.forEach((e, client) -> {
                 try {
                     client.leftChatRoom(myUserName);
+                    client.leftGameRoom(myUserName);
                 } catch (RemoteException ex) {
                     Logger.getLogger(ServerMessageImp.class.getName()).log(Level.SEVERE, null, ex);
                 }

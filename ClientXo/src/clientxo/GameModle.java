@@ -39,7 +39,7 @@ public class GameModle extends UnicastRemoteObject implements ClientCallBack {
     }
 
 
-    public ServerCallBack stablishConnection() {
+    public ServerCallBack getServerInstance() {
         if (server == null) {
             try {
                 Registry reg = LocateRegistry.getRegistry("127.0.0.1", 1099);
@@ -131,6 +131,20 @@ public class GameModle extends UnicastRemoteObject implements ClientCallBack {
             Logger.getLogger(GameModle.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+
+    @Override
+    public void leftGameRoom(String userNameWhoLeft) throws RemoteException {
+        if (gameRoom.getPlayers().containsKey(userNameWhoLeft)) {
+                ArrayList<String> temp = new ArrayList<>(gameRoom.getPlayers().keySet());
+                if (temp.indexOf(userNameWhoLeft) > 1) {
+                    gameRoom.getPlayers().remove(userNameWhoLeft);
+
+                } else {
+                    temp.remove(userNameWhoLeft);
+                    getServerInstance().notifiyGameResult(gameRoom.getRoomName(), temp.get(0));
+                }
+            }
     }
    
 

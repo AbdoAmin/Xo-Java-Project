@@ -30,7 +30,7 @@ public interface ClientCallBack extends Remote{
     
     
     
-//    public void leftGameRoom(String userNameWhoLeft) throws RemoteException;
+    public void leftGameRoom(String userNameWhoLeft) throws RemoteException;
     
     //control game
     public void play(String/*<-Player*/ player,int position) throws RemoteException;
