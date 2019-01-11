@@ -13,6 +13,7 @@ import java.rmi.RemoteException;
  *
  * @author Abdo Amin
  */
+
 public interface ClientCallBack extends Remote{
     //game init
     public boolean sendGameNotifigation(String playerUserName)throws RemoteException ;

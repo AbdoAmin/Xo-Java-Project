@@ -10,6 +10,7 @@ import commontxo.ServerCallBack;
 import commontxo.ClientCallBack;
 import commontxo.GameRoom;
 import commontxo.Player;
+import commontxo.PlayerList;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -29,8 +30,8 @@ public class GameModle extends UnicastRemoteObject implements ClientCallBack {
     GameController myController;
     private ServerCallBack server;
     private Player me;
-    
-    ArrayList<String/*PlayerInfo*/> onlineList;
+
+    ArrayList<PlayerList> onlineList;
     GameRoom gameRoom;
     HashMap<String, ChatRoom> chatRooms;//multibale chat rooms
 
@@ -38,13 +39,12 @@ public class GameModle extends UnicastRemoteObject implements ClientCallBack {
         this.myController = myController;
     }
 
-
     public ServerCallBack getServerInstance() {
         if (server == null) {
             try {
                 Registry reg = LocateRegistry.getRegistry("127.0.0.1", 1099);
                 server = (ServerCallBack) reg.lookup("GameService");
-                server.register(this, "Abdo");
+                server.register(this, me.getPlayerUserName());
             } catch (RemoteException | NotBoundException e) {
                 System.err.println(e.getMessage());
             }
@@ -54,7 +54,7 @@ public class GameModle extends UnicastRemoteObject implements ClientCallBack {
 
     @Override
     public boolean sendGameNotifigation(String playerUserName) throws RemoteException {
-        //TODO Create Dialog
+        //TODO Create Dialog retuen true at accpet
         System.out.println("sendGameNotifigation");
         return true;
     }
@@ -79,7 +79,6 @@ public class GameModle extends UnicastRemoteObject implements ClientCallBack {
 
     @Override
     public void leaveGameRoom() throws RemoteException {
-
         gameRoom = null;
     }
 
@@ -97,34 +96,34 @@ public class GameModle extends UnicastRemoteObject implements ClientCallBack {
     public void addPlayerToGameRoom(String playerUserName, ClientCallBack player) throws RemoteException {
         gameRoom.addPlayer(playerUserName, player);
     }
-    
-     @Override
+
+    @Override
     public void leftChatRoom(String userNameWhoLeft) throws RemoteException {
-        if(!me.getPlayerUserName().equals(userNameWhoLeft))
+        if (!me.getPlayerUserName().equals(userNameWhoLeft)&&chatRooms.containsKey(userNameWhoLeft)) {
             chatRooms.remove(userNameWhoLeft);
+        }
     }
-    
-    
+
     @Override
     public void receiveMessage(String senderUserName, String message) throws RemoteException {
-     if(chatRooms.get(senderUserName)!=null)
-     {
-         ChatRoom myChatRoom=chatRooms.get(senderUserName);
-      //   myController.displayMessage(myChatRoom.getChat());
-        myController.displayMessage(senderUserName+" : "+message);
-   
-     }
+        if (chatRooms.get(senderUserName) != null) {
+            ChatRoom myChatRoom = chatRooms.get(senderUserName);
+            //   myController.displayMessage(myChatRoom.getChat());
+            myController.displayMessage(senderUserName + " : " + message);
+
+        }
     }
- @Override
+
+    @Override
     public void sendMessage(String myUserName, String message) {
         try {
-            receiveMessage(myUserName,message);
+            receiveMessage(myUserName, message);
         } catch (RemoteException ex) {
             Logger.getLogger(GameModle.class.getName()).log(Level.SEVERE, null, ex);
         }
-        ChatRoom myChatRoom=chatRooms.get(myUserName);
-        
-     ClientCallBack others=myChatRoom.getOtherClients();
+        ChatRoom myChatRoom = chatRooms.get(myUserName);
+
+        ClientCallBack others = myChatRoom.getOtherClients();
         try {
             others.receiveMessage(myUserName, message);
         } catch (RemoteException ex) {
@@ -136,16 +135,7 @@ public class GameModle extends UnicastRemoteObject implements ClientCallBack {
     @Override
     public void leftGameRoom(String userNameWhoLeft) throws RemoteException {
         if (gameRoom.getPlayers().containsKey(userNameWhoLeft)) {
-                ArrayList<String> temp = new ArrayList<>(gameRoom.getPlayers().keySet());
-                if (temp.indexOf(userNameWhoLeft) > 1) {
-                    gameRoom.getPlayers().remove(userNameWhoLeft);
-
-                } else {
-                    temp.remove(userNameWhoLeft);
-                    getServerInstance().notifiyGameResult(gameRoom.getRoomName(), temp.get(0));
-                }
-            }
+            gameRoom.removePlayer(userNameWhoLeft);
+        }
     }
-   
-
 }

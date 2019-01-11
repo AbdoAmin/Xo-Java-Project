@@ -8,6 +8,9 @@ package serverxo;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -24,7 +27,14 @@ public class ChatServer {
 
     public ChatServer() {
         try {
-            ServerMessageImp obj = new ServerMessageImp();
+            ServerMessageImp obj = null;
+            try {
+                obj = new ServerMessageImp();
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(ChatServer.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SQLException ex) {
+                Logger.getLogger(ChatServer.class.getName()).log(Level.SEVERE, null, ex);
+            }
             Registry reg = LocateRegistry.createRegistry(1099);
             reg.rebind("GameService", obj);
         } catch (RemoteException e) {

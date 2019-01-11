@@ -46,7 +46,6 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
 //    public ArrayList<Player> getAllPlayers() throws RemoteException {
 //        return PlayersInformation;
 //    }
-    
     public void IntializePlayersList() {
         Player p;
 
@@ -54,7 +53,6 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
             Statement stmt = connection.createStatement();
             String query = new String("select * from user ");
             ResultSet s = stmt.executeQuery(query);
-
             while (s.next()) {
                 p = new Player();
                 p.setPlayerID(s.getInt("UserID"));
@@ -66,7 +64,6 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
                 p.setPlayerState("offline");
                 stmt.close();
                 PlayersInformation.add(p);
-
             }
             connection.close();
 
@@ -126,9 +123,10 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
 
                 //Init GameRoom at Client Side
                 clients.get(myUserName).joinGameRoom(myUserName, clients.get(myUserName));
-
                 clients.get(oppesiteUserName).joinGameRoom(myUserName, clients.get(myUserName));
-
+                //Init ChatRoom at Client Side
+                joinChatRoom(myUserName,oppesiteUserName);
+                
                 //pass CleintInterFace
                 clients.get(myUserName).addPlayerToGameRoom(oppesiteUserName, clients.get(oppesiteUserName));
                 clients.get(oppesiteUserName).addPlayerToGameRoom(oppesiteUserName, clients.get(oppesiteUserName));
@@ -140,9 +138,12 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
     }
 
     @Override
-    public boolean notifiyGameResult(String roomName, String WinnerUserName) throws RemoteException {
-        //TODO Ediiit Player score
-
+    public boolean notifiyGameResult(String roomName, String winnerUserName) throws RemoteException {
+        PlayersInformation.forEach(player->{
+            if(player.getPlayerUserName().equals(winnerUserName)){
+                player.setPlayerScore(player.getPlayerScore()+10);
+            }
+        }); //add score to client player
         if (gameRooms.containsKey(roomName)) {
             gameRooms.get(roomName).getPlayers().forEach((e, client) -> {
                 try {
@@ -154,9 +155,11 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
             clientMapGameRoom.forEach((name, room)
                     -> {
                 if (room.equals(roomName)) {
-                    room = null;
+                    clientMapGameRoom.remove(name);
                 }
             });
+            leftChatRoom(gameRooms.get(roomName).getPlayers().keySet().toArray()[0].toString(),
+                    gameRooms.get(roomName).getPlayers().keySet().toArray()[1].toString());
             gameRooms.remove(roomName);
             updateList();
             return true;
@@ -167,20 +170,16 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
     @Override
     public void joinChatRoom(String myUserName, String playerUserName) throws RemoteException {
         if (clients.containsKey(myUserName) && clients.containsKey(playerUserName)) {
-
             clients.get(myUserName).joinChatRoom(playerUserName, clients.get(playerUserName));
             clients.get(playerUserName).joinChatRoom(myUserName, clients.get(myUserName));
-
         }
     }
 
     @Override
     public void leftChatRoom(String myUserName, String userNameWhoLeft) throws RemoteException {
         if (clients.containsKey(myUserName) && clients.containsKey(userNameWhoLeft)) {
-
             clients.get(myUserName).leftChatRoom(userNameWhoLeft);
             clients.get(userNameWhoLeft).leftChatRoom(myUserName);
-
         }
     }
 
@@ -227,9 +226,8 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
                     Logger.getLogger(ServerMessageImp.class.getName()).log(Level.SEVERE, null, ex);
                 }
             });
+            removeClient(myUserName);
             updateList();
-            clients.remove(myUserName);
-
         }
     }
 
@@ -237,8 +235,8 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
     @Override
     public boolean signUp(String userName, String Name, String upassword, String Email) throws RemoteException {
         try {
-            String query = new String("INSERT INTO `gamexo`.`user` "
-                    + "(`UserName`, `Name`, `UserEmail`, `UserPassword`) values (?, ?, ?, ?)");
+            String query = "INSERT INTO `gamexo`.`user` "
+                    + "(`UserName`, `Name`, `UserEmail`, `UserPassword`) values (?, ?, ?, ?)";
             PreparedStatement p = (PreparedStatement) connection.prepareStatement(query);
             p.setString(1, userName);
             p.setString(2, Name);
@@ -253,9 +251,7 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
                 player.setPlayerState("online");
                 PlayersInformation.add(player);
             }
-
             return true;
-
         } catch (SQLException ex) {
             return false;
         }
@@ -267,11 +263,8 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
             if (p.getPlayerUserName().equals(userName)) {
                 p.setPlayerState("offline");
                 break;
-
             }
-
         }
-
     }
 
     @Override
@@ -281,12 +274,25 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
             if (p.getPlayerUserName().equals(userName) && p.getPlayerPassword().equals(PlayerPassword)) {
                 p.setPlayerState("online");
                 return p;
-
             }
         }
-
         return null;
-
     }
-
+    
+    public void removeClient(String userName) throws RemoteException {
+        if(clients.containsKey(userName))
+            clients.remove(userName);
+    }
+    
+    @Override
+    public void removeClientMapGameRoom(String userName) throws RemoteException {
+        if(clientMapGameRoom.containsKey(userName))
+            clientMapGameRoom.remove(userName);
+    }
+    
+    @Override
+    public void removePlayerFromGameRoom(String userName,String gameRoom) throws RemoteException {
+        if(gameRooms.containsKey(gameRoom))
+            gameRooms.get(gameRoom).removePlayer(userName);
+    }
 }

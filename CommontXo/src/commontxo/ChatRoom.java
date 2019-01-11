@@ -1,6 +1,5 @@
 package commontxo;
 
-import java.util.ArrayList;
 
 public class ChatRoom {
 

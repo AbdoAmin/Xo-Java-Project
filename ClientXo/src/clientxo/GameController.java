@@ -5,8 +5,8 @@
  */
 package clientxo;
 
-import commontxo.ClientCallBack;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,11 +53,7 @@ public class GameController {
 //            Logger.getLogger(GameController.class.getName()).log(Level.SEVERE, null, ex);
 //        }
 
-
-        }
-    
-    
-    
+    }
 
     public static void main(String args[]) {
         GameController myGame = new GameController();
@@ -69,16 +65,26 @@ public class GameController {
             Logger.getLogger(GameController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     //current player surrender or leave spectate.
-    public void withdraw(String myUserName){
-        myModle.gameRoom.getPlayers().forEach((e,client)->{
-            try {
-                client.leftGameRoom(myUserName);
-            } catch (RemoteException ex) {
-                Logger.getLogger(GameController.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        });
+    public void withdraw(String myUserName) throws RemoteException {
+        //remove Mysilfe ...
+        ArrayList<String> temp = new ArrayList<>(myModle.gameRoom.getPlayers().keySet());
+        if (temp.indexOf(myUserName) > 1) {
+            myModle.gameRoom.getPlayers().forEach((e, client) -> {
+                try {
+                    client.leftGameRoom(myUserName);
+                } catch (RemoteException ex) {
+                    Logger.getLogger(GameController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            myModle.leaveGameRoom();
+            myModle.getServerInstance().removeClientMapGameRoom(myUserName);
+            myModle.getServerInstance().removePlayerFromGameRoom(myUserName, myModle.gameRoom.getRoomName());
+        } else {
+            temp.remove(myUserName);
+            myModle.getServerInstance().notifiyGameResult(myModle.gameRoom.getRoomName(), temp.get(0));
+        }
     }
 
 }

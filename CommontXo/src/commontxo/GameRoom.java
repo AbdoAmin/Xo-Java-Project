@@ -43,6 +43,10 @@ public class GameRoom implements Serializable{
         this.players.put(playerUserName,player);
     }
     
+    public void removePlayer(String playerUserName) {
+        this.players.remove(playerUserName);
+    }
+    
      
 
 }
