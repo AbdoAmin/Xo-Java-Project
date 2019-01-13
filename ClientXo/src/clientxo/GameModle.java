@@ -89,7 +89,7 @@ public class GameModle extends UnicastRemoteObject implements ClientCallBack {
 
     @Override
     public void notifiyOnlineList() throws RemoteException {
-
+        myController.showPlayerList(getServerInstance().initOnlineList());
     }
 
     @Override
@@ -106,12 +106,13 @@ public class GameModle extends UnicastRemoteObject implements ClientCallBack {
 
     @Override
     public void receiveMessage(String senderUserName, String message) throws RemoteException {
-        if (chatRooms.get(senderUserName) != null) {
-            ChatRoom myChatRoom = chatRooms.get(senderUserName);
-            //   myController.displayMessage(myChatRoom.getChat());
-            myController.displayMessage(senderUserName + " : " + message);
-
+        if (chatRooms.containsKey(senderUserName)) {
+            chatRooms.get(senderUserName).setChat(
+                    chatRooms.get(senderUserName).getChat()+"\n"
+                            +senderUserName + " : " + message);
+            myController.displayMessage(chatRooms.get(senderUserName).getChat());
         }
+        //append message at my room after send
     }
 
     @Override
@@ -121,15 +122,6 @@ public class GameModle extends UnicastRemoteObject implements ClientCallBack {
         } catch (RemoteException ex) {
             Logger.getLogger(GameModle.class.getName()).log(Level.SEVERE, null, ex);
         }
-        ChatRoom myChatRoom = chatRooms.get(myUserName);
-
-        ClientCallBack others = myChatRoom.getOtherClients();
-        try {
-            others.receiveMessage(myUserName, message);
-        } catch (RemoteException ex) {
-            Logger.getLogger(GameModle.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
     }
 
     @Override

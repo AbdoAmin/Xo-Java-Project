@@ -5,11 +5,13 @@
  */
 package commontxo;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Abdo Amin
  */
-public class PlayerList {
+public class PlayerList implements Serializable{
     private String name;
     private String roomName;
 

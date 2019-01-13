@@ -5,6 +5,7 @@
  */
 package clientxo;
 
+import commontxo.PlayerList;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -35,7 +36,7 @@ public class GameController {
     }
 
     public void displayMessage(String myMessage) {
-        myGUI.displayMessage(myMessage);
+        myGUI.displayMessage(myMessage);//append at textArea
     }
 
     public void unRegister() {
@@ -85,6 +86,10 @@ public class GameController {
             temp.remove(myUserName);
             myModle.getServerInstance().notifiyGameResult(myModle.gameRoom.getRoomName(), temp.get(0));
         }
+    }
+
+    void showPlayerList(ArrayList<PlayerList> initOnlineList) {
+        
     }
 
 }

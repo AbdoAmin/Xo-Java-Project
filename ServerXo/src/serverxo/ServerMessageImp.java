@@ -206,7 +206,7 @@ public class ServerMessageImp extends UnicastRemoteObject implements ServerCallB
     }
 
     @Override
-    public void leaveServer(String gameRoom, String myUserName) throws RemoteException {
+    public void leaveServer(String myUserName) throws RemoteException {
         if (clients.containsKey(myUserName)) {
 //            if (gameRooms.containsKey(gameRoom)) {
 //                ArrayList<String> temp = new ArrayList<>(gameRooms.get(gameRoom).getPlayers().keySet());
